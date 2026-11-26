@@ -1,0 +1,75 @@
+Pruebas de integración contra http://localhost:8080/api/v1
+Fecha: 2026-11-26 11:08:26
+
+== A. Autenticación y JWT
+PASS   01  Login con credenciales correctas entrega el token                        HTTP 200
+PASS   02  Login con clave incorrecta responde 401 con mensaje genérico            HTTP 401
+PASS   03  Login con correo inexistente responde el mismo mensaje genérico         HTTP 401
+PASS   04  Login sin datos responde 400 (validación)                               HTTP 400
+PASS   05  Registro de un dueño nuevo responde 201 con rol dueno                   HTTP 201
+PASS   06  Registro que intenta asignarse el rol administrador: el servidor lo ignora HTTP 201
+PASS   07  Registro con correo repetido responde 409                                HTTP 409
+PASS   08  Registro con contraseña muy corta responde 400                          HTTP 400
+PASS   09  Ruta protegida sin token responde 401                                    HTTP 401
+PASS   10  Token con la firma alterada responde 401                                 HTTP 401
+
+== B. Roles y propiedad de los datos
+PASS   11  Un dueño no puede listar usuarios (403)                                 HTTP 403
+PASS   12  La recepcionista no puede listar usuarios (403)                          HTTP 403
+PASS   13  El administrador lista usuarios (200)                                    HTTP 200
+PASS   14  Un usuario consulta su propia cuenta (200)                               HTTP 200
+PASS   15  Cambiar el id en la URL no permite ver la cuenta de otra persona (403)   HTTP 403
+PASS   16  Un dueño no puede cambiarse el rol a administrador (403)                HTTP 403
+PASS   17  Un dueño no puede eliminar usuarios (403)                               HTTP 403
+
+== C. CRUD de usuarios (administrador)
+PASS   18  Crear usuario con rol recepcionista (201)                                HTTP 201
+PASS   19  Crear usuario con correo repetido (409)                                  HTTP 409
+PASS   20  Crear usuario con un rol inexistente (400)                               HTTP 400
+PASS   21  Modificar nombre y rol de un usuario (200)                               HTTP 200
+PASS   22  Consultar un usuario inexistente (404)                                   HTTP 404
+PASS   23  El administrador no puede eliminar su propia cuenta (409)                HTTP 409
+PASS   24  Eliminar un usuario (204)                                                HTTP 204
+
+== D. Catálogo de servicios
+PASS   25  Listar servicios es público (200)                                       HTTP 200
+PASS   26  Ver el detalle de un servicio es público (200)                          HTTP 200
+PASS   27  Servicio inexistente (404)                                               HTTP 404
+PASS   28  Crear servicio sin sesión (401)                                         HTTP 401
+PASS   29  Un dueño no puede crear servicios (403)                                 HTTP 403
+PASS   30  El administrador crea un servicio (201)                                  HTTP 201
+PASS   31  Crear servicio con código repetido (409)                                HTTP 409
+PASS   32  Oferta con precio mayor al normal (400)                                  HTTP 400
+PASS   33  Modificar un servicio y ponerlo en oferta (200)                          HTTP 200
+PASS   34  Eliminar un servicio sin citas (204)                                     HTTP 204
+
+== E. Citas y regla de negocio (horario ocupado = 409)
+PASS   35  Listar citas sin sesión (401)                                           HTTP 401
+PASS   36  Solicitar cita de urgencia: queda pendiente y el servidor calcula $28.000 HTTP 201
+PASS   37  La cita queda a nombre del usuario del token
+PASS   38  Fecha anterior a hoy (400)                                               HTTP 400
+PASS   39  Hora fuera del horario de atención (400)                                HTTP 400
+PASS   40  Especie no permitida (400)                                               HTTP 400
+PASS   41  Servicio inexistente (400)                                               HTTP 400
+PASS   42  Otro dueño pide cita en el mismo horario: queda pendiente (201)         HTTP 201
+PASS   43  Un dueño no puede confirmar citas (403)                                 HTTP 403
+PASS   44  La recepcionista confirma la primera cita (200)                          HTTP 200
+PASS   45  Confirmar otra cita en el mismo horario: CONFLICTO (409)                 HTTP 409
+PASS   46  Un dueño solo ve sus propias citas
+PASS   47  Un dueño no puede ver la cita de otra persona (403)                     HTTP 403
+PASS   48  La recepcionista ve las citas de todos
+PASS   49  Filtrar citas por estado (200)                                           HTTP 200
+PASS   50  Filtrar por un estado inválido (400)                                    HTTP 400
+PASS   51  Reagendar a un horario ocupado (409)                                     HTTP 409
+PASS   52  Reagendar a un horario libre (200)                                       HTTP 200
+PASS   53  El dueño cancela su propia cita (200)                                   HTTP 200
+PASS   54  Cancelar una cita ya cancelada (409)                                     HTTP 409
+PASS   55  Confirmar una cita cancelada (409)                                       HTTP 409
+PASS   56  Un dueño no puede cancelar la cita de otra persona (403)                HTTP 403
+PASS   57  Eliminar un servicio que tiene citas asociadas (409)                     HTTP 409
+
+==============================================================
+RESUMEN: 57 pruebas, 57 correctas, 0 con falla
+==============================================================
+Datos de prueba (prefijos PRB- y prueba-). Para limpiarlos:
+  sudo mysql veterinaria_db -e "DELETE FROM citas WHERE mascota LIKE 'PRB-%'; DELETE FROM usuarios WHERE correo LIKE 'prueba-%@test.cl'; DELETE FROM servicios WHERE codigo LIKE 'PRB%';"
