@@ -58,7 +58,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/usuarios").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.POST, "/api/v1/usuarios").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/usuarios/**").hasRole("ADMINISTRADOR")
-                        // El resto exige estar logueado (los permisos finos se revisan en los services)
+                        // Solo el personal confirma o reagenda citas
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/citas/*/confirmar", "/api/v1/citas/*/reagendar")
+                                .hasAnyRole("ADMINISTRADOR", "RECEPCIONISTA")
                         .anyRequest().authenticated())
                 .exceptionHandling(e -> e
                         // Sin token, alterado o vencido -> 401
