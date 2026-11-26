@@ -51,6 +51,9 @@ public class SecurityConfig {
                         // Públicas: login, registro y la documentación Swagger
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        // El catálogo se puede ver sin iniciar sesión; modificarlo es solo del administrador
+                        .requestMatchers(HttpMethod.GET, "/api/v1/servicios", "/api/v1/servicios/**").permitAll()
+                        .requestMatchers("/api/v1/servicios", "/api/v1/servicios/**").hasRole("ADMINISTRADOR")
                         // Solo el administrador lista, crea y elimina usuarios
                         .requestMatchers(HttpMethod.GET, "/api/v1/usuarios").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.POST, "/api/v1/usuarios").hasRole("ADMINISTRADOR")
