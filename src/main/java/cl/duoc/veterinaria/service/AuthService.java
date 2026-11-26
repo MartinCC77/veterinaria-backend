@@ -1,10 +1,12 @@
 package cl.duoc.veterinaria.service;
 
 import cl.duoc.veterinaria.dto.LoginRequest;
+import cl.duoc.veterinaria.dto.LoginResponse;
 import cl.duoc.veterinaria.dto.UsuarioResponse;
 import cl.duoc.veterinaria.exception.ApiException;
 import cl.duoc.veterinaria.model.Usuario;
 import cl.duoc.veterinaria.repository.UsuarioRepository;
+import cl.duoc.veterinaria.security.JwtService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,14 +16,16 @@ public class AuthService {
 
     private final UsuarioRepository repository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public AuthService(UsuarioRepository repository, PasswordEncoder passwordEncoder) {
+    public AuthService(UsuarioRepository repository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
-    // Valida el correo y la contraseña. Si algo falla, el mensaje es siempre el mismo
-    public UsuarioResponse iniciarSesion(LoginRequest datos) {
+    // Valida correo y contraseña. Si algo falla, el mensaje es siempre el mismo
+    public LoginResponse iniciarSesion(LoginRequest datos) {
         String correo = datos.correo().trim().toLowerCase();
 
         Usuario usuario = repository.findByCorreo(correo)
@@ -32,7 +36,8 @@ public class AuthService {
             throw credencialesInvalidas();
         }
 
-        return UsuarioResponse.desde(usuario);
+        String token = jwtService.generarToken(usuario.getId(), usuario.getCorreo(), usuario.getRol());
+        return new LoginResponse(token, "Bearer", UsuarioResponse.desde(usuario));
     }
 
     private ApiException credencialesInvalidas() {

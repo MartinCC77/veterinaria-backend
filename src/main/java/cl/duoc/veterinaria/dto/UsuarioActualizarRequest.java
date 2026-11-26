@@ -22,7 +22,7 @@ public record UsuarioActualizarRequest(
         String contrasena,
 
         // Opcional: si no viene, se mantiene el rol actual
-        @Pattern(regexp = "ADMIN|USUARIO", message = "El rol debe ser ADMIN o USUARIO")
+        @Pattern(regexp = "administrador|recepcionista|dueno", message = "El rol debe ser administrador, recepcionista o dueno")
         String rol
 ) {
 }
